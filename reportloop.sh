@@ -1,7 +1,6 @@
 #!/bin/sh
 
 destinationfile=/tmp/destinations.txt
-reportfile=reports/report-$(date --iso-8601=seconds).txt
 
 while [ 1 ]; do
 
@@ -12,6 +11,8 @@ cd /tmp
 cd /root/mxversions
 
 php scanner.php $destinationfile
+
+reportfile=reports/report-$(date --iso-8601=seconds).txt
 
 ./report.sh > $reportfile
 
