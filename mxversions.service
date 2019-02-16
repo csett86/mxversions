@@ -1,0 +1,7 @@
+[Unit]
+Description=mxversions
+[Service]
+ExecStart=/root/mxversions/reportloop.sh
+
+[Install]
+WantedBy=multi-user.target
