@@ -2,35 +2,88 @@
 
 $db = new SQLite3( 'scanner.db' );
 
+function __http_get_json( $url )
+{
+    $result = @file_get_contents
+    (
+        $url,
+        false,
+        stream_context_create
+        (
+            array
+            (
+                'http' => array( 'timeout' => 2 ),
+                'ssl'  => array( 'verify_peer' => false,
+                    'verify_peer_name' => false )
+            )
+        )
+    );
+
+    if ( false === $result )
+        return false;
+
+    $json = @json_decode( $result );
+
+    if ( ! is_object( $json ) )
+        return false;
+
+    return $json;
+}
+
+function __get_well_known( $domain )
+{
+    $result = __http_get_json(
+        sprintf( 'https://%s/.well-known/matrix/server', $domain ) );
+
+    if ( false === $result )
+        return false;
+
+    if ( ! isset( $result->{ 'm.server' } ) )
+        return false;
+
+    return $result->{ 'm.server' };
+}
+
 function __get_domain_srv_record( $d )
 {
     $d = sprintf( '_matrix._tcp.%s', $d );
 
     if ( false === ( $r = @dns_get_record( $d, DNS_SRV ) ) )
         return false;
-    else
-        if ( isset( $r[ 0 ] ) and is_array( $r[ 0 ] ) )
-            return $r[ 0 ];
-        else
-            return false;
+
+    if ( ! isset( $r[ 0 ] ) or ! is_array( $r[ 0 ] ) )
+        return false;
+
+    return sprintf( '%s:%s', $r[ 0 ][ 'target' ],
+        $r[ 0 ][ 'port' ] );
 }
 
 function __get_domain_target( $d )
 {
     $t = $d;
     $p = '8448';
-    $r = __get_domain_srv_record( $d );
 
-    if ( isset( $r[ 'target' ] ) )
-        $t = $r[ 'target' ];
-
-    if ( isset( $r[ 'port' ] ) )
-        $p = $r[ 'port' ];
-
-    if ( false !== strpos( $t, ':' ) )
-        list( $t, $p ) = explode( ':', $t );
-
-    return sprintf( '%s:%s', $t, $p );
+    $r = __get_well_known( $d );
+    if ( $r )
+    {
+        #echo "well-known for $d is $r" . PHP_EOL;
+        return $r;
+    }
+    else
+    {
+        #echo "well-known failed for $d" . PHP_EOL;
+        $r = __get_domain_srv_record( $d );
+        if ( $r )
+        {
+            #echo "srv for $d is $r" . PHP_EOL;
+            return $r;
+        }
+        else
+        {
+            #echo "srv failed for $d, using fallback" . PHP_EOL;
+            return sprintf( '%s:%s', $d, $p );
+        }
+    }
 }
 
 function __get_server_version( $d )
@@ -85,13 +138,7 @@ foreach ( $domains as $d )
             sleep( 1 );
     }
 
-    #if ( is_array( $c ) and ! empty( $c ) and strtotime( $c[ 'last_time' ] ) > time() - 6 * 3600 )
-    #{
-    #    echo $log_prefix . ' recently scanned' . PHP_EOL;
-    #    continue;
-    #}
-
-    #else echo $log_prefix . ' scanning...' . PHP_EOL;
+    #echo $log_prefix . ' scanning...' . PHP_EOL;
 
     $t = __get_domain_target( $d );
 
