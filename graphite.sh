@@ -1,5 +1,7 @@
 #!/bin/sh
 
+timestamp=$(date +%s)
+
 sqlite3 scanner.db \
 'select
     distinct( software || "/" || version ) as v,
@@ -11,5 +13,4 @@ where
 group by v
 order by c desc, v asc 
 limit 5' \
-| sed 's/\./-/g' | sed 's/|/:/' | sed 's,/,.,' \
-| xargs -n 1 -J % echo % "`date +%s`" | sed 's/:/ /' | sed 's/S/s/'
+| sed -e 's/\./-/g' -e 's,/,.,' -e "s/\$/ $timestamp/" -e 's/|/ /' -e 's/S/s/'
