@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 destinationfile=/home/chris/mxversions/destinations.txt
 
@@ -17,6 +17,6 @@ reportfile=reports/report-$(date --iso-8601=seconds).txt
 
 cp $reportfile /var/www/html/mxversions.txt
 
-./graphite.sh |nc -q0 localhost 3002
+./graphite.sh |nc -N -q0 localhost 2003
 
 done

@@ -1,6 +1,4 @@
-#!/bin/sh
-
-timestamp=$(date +%s)
+#!/bin/bash
 
 sqlite3 scanner.db \
 'select
@@ -13,4 +11,4 @@ where
 group by v
 order by c desc, v asc 
 limit 5' \
-| sed -e 's/\./-/g' -e 's,/,.,' -e "s/\$/ $timestamp/" -e 's/|/ /' -e 's/S/s/'
+| sed -e 's/\./-/g' -e 's,/,.,' -e 's/$/ -1/' -e 's/|/ /' -e 's/S/s/'
