@@ -1,0 +1,8 @@
+CREATE TABLE versions (
+id INTEGER PRIMARY KEY,
+first_time DATETIME NOT NULL,
+last_time DATETIME NOT NULL,
+domain VARCHAR NOT NULL,
+software VARCHAR NOT NULL,
+version VARCHAR NOT NULL
+)
