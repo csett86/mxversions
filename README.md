@@ -1,8 +1,10 @@
 # mxversions
 
-gather all known homeservers from a matrix server and collect version numbers.
+Gather all known home servers with their versions numbers from one home server, plotting them over time with Graphite.
 
-Graphing can be done via graphite.sh
+Live Demo: https://graph.settgast.org/d/z1nplqXik/matrix?orgId=1
+
+Plotting is done with Grafana.
 
 For an example, see reportloop.sh or graphiteloop.sh which both can be used in a simple systemd unit like mxversions.service.
 
